@@ -1,0 +1,101 @@
+---
+# If true, the FSM transitions are managed by an external tool
+Managed: false
+# If true and the FSM is self-managed, transitions should be triggered
+StepByStep: false
+# Change idle behaviour, if true the state is kept until transition,
+# otherwise the FSM holds the last state until transition
+IdleKeepState: true
+# Where to look for state libraries
+StatesLibraries:
+- "@MC_STATES_DEFAULT_RUNTIME_INSTALL_PREFIX@"
+- "@MC_STATES_RUNTIME_INSTALL_PREFIX@"
+# Where to look for state files
+StatesFiles:
+- "@MC_STATES_DEFAULT_RUNTIME_INSTALL_PREFIX@/data"
+- "@MC_STATES_RUNTIME_INSTALL_PREFIX@/data"
+# If true, state factory will be more verbose
+VerboseStateFactory: false
+
+# Additional robots to load
+robots:
+  ground:
+    module: env/ground
+
+# General constraints, always on
+constraints:
+#- type: contact
+- type: kinematics
+  damper: [0.1, 0.01, 0.5]
+- type: compoundJoint
+
+# Collision constraint
+collisions:
+- type: collision
+  useMinimal: true
+
+# Initial set of contacts
+robots:
+  ground:
+    module: env/ground
+
+robot_models:
+  hrp5_p:
+    stabilizer:
+      dcm_tracking:
+        gains:
+          prop: 4
+          integral: 0
+          deriv: 0.2
+      admittance:
+        cop: [0.03, 0.04]
+        maxVel:
+          angular: [3., 3., 3.]
+          linear: [1., 1., 1.]
+      tasks:
+        contact:
+          damping: 300.
+      dcm_bias:
+        #biasDriftPerSeconStd: 0.0001
+        zmpMeasureErrorStd: 0.0005
+        biasLimit: [0.05, 0.05]
+        withDCMBias: true
+    sole:
+      half_length: 0.11895
+      half_width: 0.069
+      friction: 0.7
+    torso:
+      pitch: 0.0
+
+contacts: []
+#- r1: hrp5_p
+#  r2: ground
+#  r1Surface: LeftFoot
+#  r2Surface: AllGround
+#- r1: hrp5_p
+#  r2: ground
+#  r1Surface: RightFoot
+#  r2Surface: AllGround
+
+# Some options for a specific robot
+hrp5_p:
+  posture:
+    stiffness: 1
+    weight: 1
+
+# Implement some additional text states
+states: {}
+
+# Transitions map
+transitions:
+- [ROSClient, OK, ROSClient, Strict]
+# Initial state
+init: Demo
+
+ObserverPipelines:
+- name: StabilizerPipeline
+  observers:
+    - type: Encoder
+    #- type: Attitude
+    - type: BodySensor
+    #- type: KinematicInertial
