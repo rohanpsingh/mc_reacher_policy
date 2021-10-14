@@ -86,6 +86,14 @@ hrp5_p:
 
 # Implement some additional text states
 states:
+  Initialize:
+    base: MetaTasks
+    tasks:
+      InitialTask:
+        type: posture
+        stiffness: 1.0
+        weight: 1.0
+
   Standing:
     base: Parallel
     states: [Stabilizer::Standing, StabilizerConfiguration]
@@ -100,9 +108,11 @@ states:
 
 # Transitions map
 transitions:
-- [Demo, OK, Demo, Strict]
+#- [Demo, OK, Demo, Strict]
+- [Initialize, OK, Demo, Strict]
+
 # Initial state
-init: Demo
+init: Initial
 
 ObserverPipelines:
 - name: StabilizerPipeline

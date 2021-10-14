@@ -38,7 +38,6 @@ void StabilizerConfiguration::start(mc_control::fsm::Controller & ctl)
 
 bool StabilizerConfiguration::run(mc_control::fsm::Controller & ctl_)
 {
-
   output("OK");
   return true;
 }
