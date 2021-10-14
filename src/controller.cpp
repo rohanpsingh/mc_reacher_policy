@@ -5,7 +5,6 @@ HandReacher::HandReacher(mc_rbdyn::RobotModulePtr rm, double dt, const mc_rtc::C
 : mc_control::fsm::Controller(rm, dt, config)
 {
   config_.load(config);
-  solver().addTask(postureTask);
 
   mc_rtc::log::success("HandReacher init done");
 }

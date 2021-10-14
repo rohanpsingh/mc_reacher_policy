@@ -56,7 +56,7 @@ bool ROSClient::run(mc_control::fsm::Controller & ctl)
       for (unsigned int i = 0; i < rarm_motors.size(); i++)
       {
 	std::string jn = rarm_motors[i];
-	ctl.postureTask->target({{jn, std::vector<double>{target[i]}}});
+	ctl.getPostureTask(ctl.robot().name())->target({{jn, std::vector<double>{target[i]}}});
       }
 
       stepCounter_++;

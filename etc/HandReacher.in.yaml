@@ -27,6 +27,7 @@ constraints:
 #- type: contact
 - type: kinematics
   damper: [0.1, 0.01, 0.5]
+  velocityPercent: 0.15
 - type: compoundJoint
 
 # Collision constraint
@@ -80,7 +81,7 @@ contacts: []
 # Some options for a specific robot
 hrp5_p:
   posture:
-    stiffness: 1
+    stiffness: 100
     weight: 1
 
 # Implement some additional text states
@@ -97,5 +98,5 @@ ObserverPipelines:
   observers:
     - type: Encoder
     #- type: Attitude
-    - type: BodySensor
+    #- type: BodySensor
     #- type: KinematicInertial
