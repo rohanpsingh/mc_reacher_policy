@@ -6,10 +6,9 @@ HandReacher::HandReacher(mc_rbdyn::RobotModulePtr rm, double dt, const mc_rtc::C
 {
   config_.load(config);
 
-  mc_rtc::log::info("Loading default stabilizer configuration");
   // Load default configuration from robot module
+  mc_rtc::log::info("Loading default stabilizer configuration");
   auto stabiConfig = robot().module().defaultLIPMStabilizerConfiguration();
-
   auto robotConfig = config("robot_models")(controlRobot().name());
   if(robotConfig.has("stabilizer"))
   {
@@ -18,6 +17,7 @@ HandReacher::HandReacher(mc_rbdyn::RobotModulePtr rm, double dt, const mc_rtc::C
     mc_rtc::log::info("Stabi prop {}", stabiConfig.dcmPropGain);
   }
 
+  // configure stabilizer task
   stabilizer_.reset(
     new mc_tasks::lipm_stabilizer::StabilizerTask(
       solver().robots(),
@@ -27,9 +27,9 @@ HandReacher::HandReacher(mc_rbdyn::RobotModulePtr rm, double dt, const mc_rtc::C
       stabiConfig.rightFootSurface,
       stabiConfig.torsoBodyName,
       solver().dt()));
-  // clang-format on
   stabilizer_->configure(stabiConfig);
 
+  // is this needed?
   stabilizer_->setContacts({mc_tasks::lipm_stabilizer::ContactState::Left,
 	mc_tasks::lipm_stabilizer::ContactState::Right});
 
