@@ -24,10 +24,10 @@ robots:
 
 # General constraints, always on
 constraints:
-#- type: contact
+- type: contact
 - type: kinematics
   damper: [0.1, 0.01, 0.5]
-  velocityPercent: 0.15
+  velocityPercent: 0.05
 - type: compoundJoint
 
 # Collision constraint
@@ -46,13 +46,13 @@ robot_models:
       dcm_tracking:
         gains:
           prop: 4
-          integral: 0
+          integral: 10
           deriv: 0.2
       admittance:
-        cop: [0.03, 0.04]
+        cop: [0.008, 0.008]
         maxVel:
-          angular: [3., 3., 3.]
-          linear: [1., 1., 1.]
+         p angular: [3., 3., 3.]
+         linear: [1., 1., 1.]
       tasks:
         contact:
           damping: 300.
@@ -81,15 +81,26 @@ contacts: []
 # Some options for a specific robot
 hrp5_p:
   posture:
-    stiffness: 100
+    stiffness: 80
     weight: 1
 
 # Implement some additional text states
-states: {}
+states:
+  Standing:
+    base: Parallel
+    states: [Stabilizer::Standing, StabilizerConfiguration]
+    configs:
+      StabilizerConfiguration:
+        key: [robot_models, hrp5_p, stabilizer]
+        verbose: false
+
+  Demo:
+    base: Parallel
+    states: [ROSClient, Standing]
 
 # Transitions map
 transitions:
-- [ROSClient, OK, ROSClient, Strict]
+- [Demo, OK, Demo, Strict]
 # Initial state
 init: Demo
 
@@ -97,6 +108,5 @@ ObserverPipelines:
 - name: StabilizerPipeline
   observers:
     - type: Encoder
-    #- type: Attitude
-    #- type: BodySensor
-    #- type: KinematicInertial
+    - type: Attitude
+    - type: KinematicInertial
