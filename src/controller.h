@@ -2,7 +2,7 @@
 
 #include <mc_control/mc_controller.h>
 #include <mc_control/fsm/Controller.h>
-#include <lipm_walking/Controller.h>
+#include <mc_tasks/lipm_stabilizer/StabilizerTask.h>
 
 #include "api.h"
 

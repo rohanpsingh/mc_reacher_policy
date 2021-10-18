@@ -1,7 +1,7 @@
 #pragma once
 
 #include <mc_control/fsm/State.h>
-#include <mc_tasks/SurfaceTransformTask.h>
+#include <mc_tasks/lipm_stabilizer/StabilizerTask.h>
 
 struct StabilizerConfiguration : mc_control::fsm::State
 {

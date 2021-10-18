@@ -15,7 +15,6 @@ if(NOT TARGET mc_rtc::mc_control)
   find_package(mc_rtc REQUIRED)
 endif()
 find_package(3rd_party_ros REQUIRED COMPONENTS roscpp ros_ml_controller)
-find_package(lipm_walking_controller REQUIRED)
 
 add_subdirectory(src)
 

@@ -1,7 +1,6 @@
 #include "StabilizerConfiguration.h"
 
 #include <mc_control/fsm/Controller.h>
-#include <lipm_walking/Controller.h>
 #include <mc_rtc/io_utils.h>
 
 void StabilizerConfiguration::configure(const mc_rtc::Configuration & config)
