@@ -1,4 +1,5 @@
-cmake_minimum_required(VERSION 3.1)
+# FetchContent from CMake >= 3.11
+cmake_minimum_required(VERSION 3.11)
 
 set(CXX_DISABLE_WERROR 1)
 set(CMAKE_CXX_STANDARD 14)
@@ -9,6 +10,16 @@ set(PROJECT_URL "https://github.com/rohanpsingh/mc_reacher_policy")
 
 project(${PROJECT_NAME} CXX)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/CMakeModules)
+
+if(NOT EXISTS ${PROJECT_SOURCE_DIR}/ext/libtorch)
+  include(FetchContent)
+  FetchContent_Declare(libtorch
+    URL https://download.pytorch.org/libtorch/nightly/cpu/libtorch-cxx11-abi-shared-with-deps-latest.zip
+    SOURCE_DIR ${PROJECT_SOURCE_DIR}/ext/libtorch
+  )
+  FetchContent_Populate(libtorch)
+endif()
+
 set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${PROJECT_SOURCE_DIR}/ext/libtorch)
 
 # Check if the project is built inside mc_rtc

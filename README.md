@@ -7,13 +7,6 @@ mc-rtc controller for 3D reacher task using learned (RL) policy.
 ```sh
 $ git clone https://github.com/rohanpsingh/mc_reacher_policy.git
 ```
-- Download `libtorch` and put it in a directory called `ext/`:
-```sh
-$ cd mc_reacher_policy
-$ mkdir ext && cd ext
-$ wget https://download.pytorch.org/libtorch/nightly/cpu/libtorch-shared-with-deps-latest.zip
-$ unzip libtorch-shared-with-deps-latest.zip
-```
 - Build and install
 ```
 $ cd mc_reacher_policy
@@ -21,7 +14,6 @@ $ mkdir build && cd build
 $ cmake ..
 $ make -j8 install
 ```
-
 
 ## USAGE
 
