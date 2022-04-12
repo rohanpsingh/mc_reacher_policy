@@ -104,7 +104,8 @@ states:
 
   Demo:
     base: Parallel
-    states: [ROSClient, Standing]
+    #states: [ROSClient, Standing]
+    states: [PolicyClient, Standing]
 
 # Transitions map
 transitions:
