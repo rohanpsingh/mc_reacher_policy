@@ -113,7 +113,7 @@ transitions:
 - [Initialize, OK, Demo, Strict]
 
 # Initial state
-init: Initial
+init: Initialize
 
 ObserverPipelines:
 - name: StabilizerPipeline
