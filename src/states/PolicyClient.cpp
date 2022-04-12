@@ -32,7 +32,7 @@ bool PolicyClient::run(mc_control::fsm::Controller & ctl)
   Eigen::VectorXd ext_state = get_ext_state(ctl);
 
   // create observation vector
-  Eigen::VectorXd full_state(21);
+  Eigen::VectorXd full_state(base_obs_len);
   full_state << robot_state, ext_state;
   std::vector<double> obs(full_state.data(), full_state.data() + full_state.size());
 
@@ -47,7 +47,7 @@ bool PolicyClient::run(mc_control::fsm::Controller & ctl)
   {
     // forward pass through policy
     std::vector<torch::jit::IValue> inputs;
-    inputs.push_back(torch::ones(41));
+    inputs.push_back(torch::ones(base_obs_len));
 
     // Execute the model and turn its output into a tensor.
     at::Tensor module_out = module.forward(inputs).toTensor();

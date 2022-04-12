@@ -26,6 +26,7 @@ protected:
 private:
     // trained policy
     const std::string path_to_trained_policy_ = "/tmp/actor.pt";
+    const int base_obs_len = 21;
     torch::jit::script::Module module;
 
     bool active_ = false;
