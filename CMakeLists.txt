@@ -4,8 +4,8 @@ set(CXX_DISABLE_WERROR 1)
 set(CMAKE_CXX_STANDARD 14)
 
 set(PROJECT_NAME HandReacher)
-set(PROJECT_DESCRIPTION "HandReacher")
-set(PROJECT_URL "")
+set(PROJECT_DESCRIPTION "mc-rtc controller for HandReacher task using RL policy.")
+set(PROJECT_URL "https://github.com/rohanpsingh/mc_reacher_policy")
 
 project(${PROJECT_NAME} CXX)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/CMakeModules)
