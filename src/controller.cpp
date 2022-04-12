@@ -52,6 +52,3 @@ void HandReacher::reset(const mc_control::ControllerResetData & reset_data)
 
   stabilizer_->reset();
 }
-
-
-CONTROLLER_CONSTRUCTOR("HandReacher", HandReacher)

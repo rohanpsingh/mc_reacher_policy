@@ -17,7 +17,7 @@ if(NOT TARGET mc_rtc::mc_control)
 endif()
 find_package(3rd_party_ros REQUIRED COMPONENTS roscpp)
 find_package(Torch REQUIRED)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${TORCH_CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 
 add_subdirectory(src)
 
