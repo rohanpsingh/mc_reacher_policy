@@ -5,7 +5,7 @@ target_link_libraries(PolicyClient PUBLIC
 )
 set_target_properties(PolicyClient
   PROPERTIES
-  INSTALL_RPATH "${PROJECT_SOURCE_DIR}/ext/libtorch"
+  INSTALL_RPATH "${PROJECT_SOURCE_DIR}/ext/libtorch/lib"
   INSTALL_RPATH_USE_LINK_PATH TRUE
   CXX_FLAGS "${CMAKE_CXX_FLAGS} ${TORCH_CXX_FLAGS}")
 
