@@ -26,8 +26,15 @@ protected:
 private:
     // trained policy
     const std::string path_to_trained_policy_ = "/tmp/actor.pt";
-    const int base_obs_len = 21;
+    const int obs_vec_len = 21;
+    const int act_vec_len = 9;
+    const float policy_ts = 0.025;
     torch::jit::script::Module module;
+
+    // Holder for observations(robot_state + external state) and actions
+    std::vector<float> policy_actions;
+    Eigen::VectorXd robot_state;
+    Eigen::VectorXd ext_state;
 
     // Set 'true' to enable PostureTask targets update
     bool active_ = false;
@@ -42,13 +49,15 @@ private:
 
     // Counter for forward passes
     int stepCounter_ = 0;
+    // Counter for run iterations
+    int iterCounter_ = 0;
 
     // Name of end-effector to display distance in GUI
     std::string ee_link_name = "Rindex_Link2";
 
-    // Fixed offsets to be added to NN predictions
-    const std::vector<double> motor_offset = {0, 60, -20,  -5, -105,  0, -40, 0, 0,
-					      0, 60,  20,   5, -105,  0,  40, 0, 0};
+    // Fixed offsets to be added to NN predictions (degrees)
+    // ideally, we should get this from half-sitting posture
+    const std::vector<double> motor_offset = {0, 60, -20,  -5, -105,  0, -40, 0, 0};
 
     // Fixed waypoints
     const std::vector<Eigen::Vector3d> wp = {Eigen::Vector3d(0.5, -0.2, 0.0),

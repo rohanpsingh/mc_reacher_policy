@@ -26,26 +26,25 @@ void PolicyClient::start(mc_control::fsm::Controller & ctl)
 
 bool PolicyClient::run(mc_control::fsm::Controller & ctl)
 {
-  // get robot state
-  Eigen::VectorXd robot_state = get_robot_state(ctl);
-  // get external state
-  Eigen::VectorXd ext_state = get_ext_state(ctl);
-
-  // create observation vector
-  Eigen::VectorXd full_state(base_obs_len);
-  full_state << robot_state, ext_state;
-  std::vector<double> obs(full_state.data(), full_state.data() + full_state.size());
-
-  // for debug
-  if(debug_out_==true)
+  int skipFrames = policy_ts/ctl.timeStep;
+  if (iterCounter_%skipFrames == 0)
   {
-    std::stringstream ss;
-    std::copy(obs.begin(), obs.end(),std::ostream_iterator<double>(ss,", "));
-    mc_rtc::log::info("[{}] {} Robot state: {}", name(), stepCounter_, ss.str().c_str());
-  }
+    // get robot state
+    robot_state = get_robot_state(ctl);
 
-  if (obs.size())
-  {
+    // get external state
+    ext_state = get_ext_state(ctl);
+
+    if (robot_state.size()==0||ext_state.size()==0)
+    {
+      mc_rtc::log::warning("[{}] Observation vector is empty. Model will not execute.", name());
+    }
+
+    // create observation vector
+    Eigen::VectorXd full_state(obs_vec_len);
+    full_state << robot_state, ext_state;
+    std::vector<double> obs(full_state.data(), full_state.data() + full_state.size());
+
     // Convert observation vector to torch::Tensor
     // (https://discuss.pytorch.org/t/how-to-convert-vector-int-into-c-torch-tensor/66539)
     auto opts = torch::TensorOptions().dtype(torch::kDouble);
@@ -57,38 +56,50 @@ bool PolicyClient::run(mc_control::fsm::Controller & ctl)
     module_out = module_out.contiguous();
     std::vector<float> preds(module_out.data_ptr<float>(),
 			     module_out.data_ptr<float>() + module_out.numel());
+    policy_actions = preds;
 
     // for debug
     if(debug_out_==true)
     {
-      std::stringstream ss;
-      std::copy(preds.begin(), preds.end(),std::ostream_iterator<double>(ss,", "));
-      mc_rtc::log::info("[{}] {} Module predictions: {}", name(), stepCounter_, ss.str().c_str());
-    }
+      std::stringstream obs_ss;
+      std::copy(obs.begin(), obs.end(),std::ostream_iterator<double>(obs_ss,", "));
+      mc_rtc::log::info("[{}] {} Robot state: {}", name(), stepCounter_, obs_ss.str().c_str());
 
-    // add fixed motor offsets to the predictions
-    std::vector<double> target;
-    for (unsigned int i=0; i<rarm_motors.size(); i++){
-      double t = preds.at(i) + motor_offset.at(i)*PI/180;
-      target.push_back(t);
+      std::stringstream act_ss;
+      std::copy(preds.begin(), preds.end(),std::ostream_iterator<double>(act_ss,", "));
+      mc_rtc::log::info("[{}] {} Module predictions: {}", name(), stepCounter_, act_ss.str().c_str());
     }
-
-    if (active_)
-    {
-      for (unsigned int i = 0; i < rarm_motors.size(); i++)
-      {
-	std::string jn = rarm_motors[i];
-	ctl.getPostureTask(ctl.robot().name())->target({{jn, std::vector<double>{target[i]}}});
-      }      
-      stepCounter_++;
-    }
+    stepCounter_++;
   }
-  else
+
+  if (active_)
   {
-    mc_rtc::log::error("Observation vector is empty");
-    return 1;
+    std::vector<double> target;
+    if(policy_actions.size()==0)
+    {
+      mc_rtc::log::warning("[{}] Action vector is empty!", name());
+      for (unsigned int i=0; i<rarm_motors.size(); i++){
+	double t = motor_offset.at(i)*PI/180;
+	target.push_back(t);
+      }
+    }
+    else
+    {
+      for (unsigned int i=0; i<rarm_motors.size(); i++){
+	double t = policy_actions.at(i) + motor_offset.at(i)*PI/180;
+	target.push_back(t);
+      }
+    }
+
+    // set posture task targets
+    for (unsigned int i = 0; i < rarm_motors.size(); i++)
+    {
+      std::string jn = rarm_motors[i];
+      ctl.getPostureTask(ctl.robot().name())->target({{jn, std::vector<double>{target[i]}}});
+    }
   }
 
+  iterCounter_++;
   output("OK");
   return true;
 }
