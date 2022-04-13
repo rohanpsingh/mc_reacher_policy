@@ -102,9 +102,6 @@ void PolicyClient::teardown(mc_control::fsm::Controller & ctl)
 
 void PolicyClient::switch_target(mc_control::fsm::Controller & ctl)
 {
-  auto pos = ctl.realRobot().bodyPosW(ee_link_name) * ctl.realRobot().posW().inv();
-
-  Eigen::Vector3d current_pos(pos.translation());
   wp_iter++;
   if (wp_iter==wp.end()){
     wp_iter = wp.begin();
@@ -172,6 +169,8 @@ void PolicyClient::createGUI(mc_control::fsm::Controller & ctl)
 		 );
   gui.addElement({"RL", name()},
 		 mc_rtc::gui::Button("Next WP", [this, &ctl]() { switch_target(ctl); }));
+  gui.addElement({"RL", name()},
+		 mc_rtc::gui::Label("Current WP", [this]() { return Eigen::Vector3d(*wp_iter); }));
 }
 
 EXPORT_SINGLE_STATE("PolicyClient", PolicyClient)
