@@ -143,6 +143,9 @@ Eigen::VectorXd PolicyClient::get_ext_state(mc_control::fsm::Controller & ctl)
 
 void PolicyClient::createGUI(mc_control::fsm::Controller & ctl)
 {
+  std::vector<std::string> bodies;
+  for (auto body : ctl.robot().mb().bodies()){ bodies.push_back(body.name()); }
+
   auto & gui = *ctl.gui();
   gui.addElement({"RL", name()},
 		 mc_rtc::gui::Label("Active", [this]() { return active_; }),
@@ -170,7 +173,31 @@ void PolicyClient::createGUI(mc_control::fsm::Controller & ctl)
   gui.addElement({"RL", name()},
 		 mc_rtc::gui::Button("Next WP", [this, &ctl]() { switch_target(ctl); }));
   gui.addElement({"RL", name()},
-		 mc_rtc::gui::Label("Current WP", [this]() { return Eigen::Vector3d(*wp_iter); }));
+		 mc_rtc::gui::Point3D("Current WP (global)", [this, &ctl]() {
+		     auto pos = ctl.realRobot().posW() * Eigen::Vector3d(*wp_iter);
+		     return Eigen::Vector3d(pos.translation()); }));
+  gui.addElement({"RL", name()},
+		 mc_rtc::gui::ComboInput("End-effector name",
+					 bodies,
+					 [this]()
+					 {
+					   return ee_link_name;
+					 },
+					 [this](const std::string & c)
+					 {
+					   ee_link_name = c;
+					 })
+		 );
+  gui.addElement({"RL", name()},
+		 mc_rtc::gui::Label("Distance from EE",
+				    [this, &ctl]()
+				    {
+				      auto p1 = ctl.realRobot().posW() * Eigen::Vector3d(*wp_iter);
+				      auto p2 = ctl.realRobot().bodyPosW(ee_link_name);
+				      float dist = (p1.translation() - p2.translation()).norm();
+				      return dist;
+				    })
+		 );
 }
 
 EXPORT_SINGLE_STATE("PolicyClient", PolicyClient)

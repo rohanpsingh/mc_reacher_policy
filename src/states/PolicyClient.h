@@ -36,10 +36,10 @@ private:
     std::vector<int> rarm_mbc_ids;
     int stepCounter_ = 0;
 
+    std::string ee_link_name = "Rindex_Link2";
     const std::vector<double> motor_offset = {0, 60, -20,  -5, -105,  0, -40, 0, 0,
 					      0, 60,  20,   5, -105,  0,  40, 0, 0};
 
-    const std::string ee_link_name = "Rindex_Link2";
     const std::vector<Eigen::Vector3d> wp = {Eigen::Vector3d(0.5, -0.2, 0.0),
 					     Eigen::Vector3d(0.5, -0.2, 0.4),
 					     Eigen::Vector3d(0.5, -0.4, 0.4),
