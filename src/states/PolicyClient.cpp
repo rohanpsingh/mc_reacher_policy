@@ -121,9 +121,6 @@ void PolicyClient::switch_target(mc_control::fsm::Controller & ctl)
 
 Eigen::VectorXd PolicyClient::get_robot_state(mc_control::fsm::Controller & ctl)
 {
-  // external state
-  Eigen::Vector3d ext_state(*wp_iter);
-
   // motor position at joint level
   std::vector<double> motor_pos;
   for (auto i : rarm_mbc_ids){
