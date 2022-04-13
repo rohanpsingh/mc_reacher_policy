@@ -36,30 +36,35 @@ bool PolicyClient::run(mc_control::fsm::Controller & ctl)
   full_state << robot_state, ext_state;
   std::vector<double> obs(full_state.data(), full_state.data() + full_state.size());
 
-  /*
   // for debug
-  std::stringstream ss;
-  std::copy(obs.begin(), obs.end(),std::ostream_iterator<double>(ss,", "));
-  mc_rtc::log::info("[{}] {%d} Robot state: %s", name(), stepCounter_, ss.str().c_str());
-  */
+  if(debug_out_==true)
+  {
+    std::stringstream ss;
+    std::copy(obs.begin(), obs.end(),std::ostream_iterator<double>(ss,", "));
+    mc_rtc::log::info("[{}] {} Robot state: {}", name(), stepCounter_, ss.str().c_str());
+  }
 
   if (obs.size())
   {
-    // forward pass through policy
-    std::vector<torch::jit::IValue> inputs;
-    inputs.push_back(torch::ones(base_obs_len));
+    // Convert observation vector to torch::Tensor
+    // (https://discuss.pytorch.org/t/how-to-convert-vector-int-into-c-torch-tensor/66539)
+    auto opts = torch::TensorOptions().dtype(torch::kDouble);
+    torch::Tensor t = torch::from_blob(obs.data(), {(int)obs.size()}, opts).to(torch::kFloat);
+    std::vector<torch::jit::IValue> inputs = {t};
 
     // Execute the model and turn its output into a tensor.
-    at::Tensor module_out = module.forward(inputs).toTensor();
-    std::vector<double> preds(module_out.data_ptr<double>(),
-			      module_out.data_ptr<double>() + module_out.numel());
+    at::Tensor module_out = module.forward(inputs).toTensor();  // determinstic=true?
+    module_out = module_out.contiguous();
+    std::vector<float> preds(module_out.data_ptr<float>(),
+			     module_out.data_ptr<float>() + module_out.numel());
 
-    /*
     // for debug
-    std::stringstream ss;
-    std::copy(preds.begin(), preds.end(),std::ostream_iterator<double>(ss,", "));
-    mc_rtc::log::info("[{}] {%d} Module predictions: %s", stepCounter_, ss.str().c_str());
-    */
+    if(debug_out_==true)
+    {
+      std::stringstream ss;
+      std::copy(preds.begin(), preds.end(),std::ostream_iterator<double>(ss,", "));
+      mc_rtc::log::info("[{}] {} Module predictions: {}", name(), stepCounter_, ss.str().c_str());
+    }
 
     // add fixed motor offsets to the predictions
     std::vector<double> target;
@@ -152,6 +157,17 @@ void PolicyClient::createGUI(mc_control::fsm::Controller & ctl)
 				       [this]()
 				       {
 					 active_ = !active_;
+				       })
+		 );
+  gui.addElement({"RL", name()},
+		 mc_rtc::gui::Checkbox("Debug Out",
+				       [this]()
+				       {
+					 return debug_out_;
+				       },
+				       [this]()
+				       {
+					 debug_out_ = !debug_out_;
 				       })
 		 );
   gui.addElement({"RL", name()},

@@ -30,6 +30,7 @@ private:
     torch::jit::script::Module module;
 
     bool active_ = false;
+    bool debug_out_ = false;
     const std::vector<std::string> rarm_motors = {"RSC", "RSP", "RSR", "RSY", "REP",
 						  "RWRY", "RWRR", "RWRP", "RHDY"};
     std::vector<int> rarm_mbc_ids;
