@@ -35,4 +35,5 @@ add_subdirectory(src)
 set(AROBASE "@")
 configure_file(etc/HandReacher.in.yaml "${CMAKE_CURRENT_BINARY_DIR}/etc/HandReacher.yaml")
 install(FILES "${CMAKE_CURRENT_BINARY_DIR}/etc/HandReacher.yaml" DESTINATION "${MC_CONTROLLER_RUNTIME_INSTALL_PREFIX}/etc")
+install(FILES "${PROJECT_SOURCE_DIR}/models/actor.pt" DESTINATION "/tmp/")
 
