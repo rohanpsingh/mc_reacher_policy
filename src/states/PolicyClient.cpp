@@ -117,6 +117,7 @@ void PolicyClient::switch_target(mc_control::fsm::Controller & ctl)
   if (wp_iter==wp.end()){
     wp_iter = wp.begin();
   }
+  current_waypoint = *wp_iter;
 }
 
 Eigen::VectorXd PolicyClient::get_robot_state(mc_control::fsm::Controller & ctl)
@@ -144,9 +145,7 @@ Eigen::VectorXd PolicyClient::get_robot_state(mc_control::fsm::Controller & ctl)
 
 Eigen::VectorXd PolicyClient::get_ext_state(mc_control::fsm::Controller & ctl)
 {
-  // external state
-  Eigen::Vector3d ext_state(*wp_iter);
-  return ext_state;
+  return current_waypoint;
 }
 
 void PolicyClient::createGUI(mc_control::fsm::Controller & ctl)
@@ -181,9 +180,13 @@ void PolicyClient::createGUI(mc_control::fsm::Controller & ctl)
   gui.addElement({"RL", name()},
 		 mc_rtc::gui::Button("Next WP", [this, &ctl]() { switch_target(ctl); }));
   gui.addElement({"RL", name()},
-		 mc_rtc::gui::Point3D("Current WP (global)", [this, &ctl]() {
-		     auto pos = ctl.realRobot().posW() * Eigen::Vector3d(*wp_iter);
-		     return Eigen::Vector3d(pos.translation()); }));
+		 mc_rtc::gui::Point3D("Current WP (global)",
+				      [this, &ctl]()
+				      {
+					auto pos = ctl.realRobot().posW() * current_waypoint;
+					return Eigen::Vector3d(pos.translation());
+				      })
+		 );
   gui.addElement({"RL", name()},
 		 mc_rtc::gui::ComboInput("End-effector name",
 					 bodies,
@@ -200,11 +203,53 @@ void PolicyClient::createGUI(mc_control::fsm::Controller & ctl)
 		 mc_rtc::gui::Label("Distance from EE",
 				    [this, &ctl]()
 				    {
-				      auto p1 = ctl.realRobot().posW() * Eigen::Vector3d(*wp_iter);
+				      auto p1 = ctl.realRobot().posW() * current_waypoint;
 				      auto p2 = ctl.realRobot().bodyPosW(ee_link_name);
 				      float dist = (p1.translation() - p2.translation()).norm();
 				      return dist;
 				    })
+		 );
+  gui.addElement({"RL", name()},
+		 mc_rtc::gui::NumberSlider("Relative waypoint (x)",
+					   [this]()
+					   {
+					     return current_waypoint.x();
+					   },
+					   [this](double v)
+					   {
+					     current_waypoint.x() = v;
+					   },
+					   0.4,
+					   0.6
+					   )
+		 );
+  gui.addElement({"RL", name()},
+		 mc_rtc::gui::NumberSlider("Relative waypoint (y)",
+					   [this]()
+					   {
+					     return current_waypoint.y();
+					   },
+					   [this](double v)
+					   {
+					     current_waypoint.y() = v;
+					   },
+					   -0.2,
+					   -0.4
+					   )
+		 );
+  gui.addElement({"RL", name()},
+		 mc_rtc::gui::NumberSlider("Relative waypoint (z)",
+					   [this]()
+					   {
+					     return current_waypoint.z();
+					   },
+					   [this](double v)
+					   {
+					     current_waypoint.z() = v;
+					   },
+					   0.0,
+					   0.4
+					   )
 		 );
 }
 

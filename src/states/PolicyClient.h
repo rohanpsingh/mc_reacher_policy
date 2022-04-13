@@ -65,4 +65,5 @@ private:
 					     Eigen::Vector3d(0.5, -0.4, 0.4),
 					     Eigen::Vector3d(0.5, -0.4, 0.0)};
     std::vector<Eigen::Vector3d>::const_iterator wp_iter = wp.begin();
+    Eigen::Vector3d current_waypoint = Eigen::Vector3d(0.4, -0.2, 0.0);
 };
