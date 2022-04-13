@@ -1,6 +1,8 @@
 # details about actor.pt
 
-# end-effector name "Rhand_Link0_Plan2"
+# end-effector name: "Rhand_Link0_Plan2"
+
+# RL policy timestep: 0.025s
 
 # trained on the following PD gains
 5400 54

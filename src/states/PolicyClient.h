@@ -29,21 +29,31 @@ private:
     const int base_obs_len = 21;
     torch::jit::script::Module module;
 
+    // Set 'true' to enable PostureTask targets update
     bool active_ = false;
+
+    // Set 'true' to print debug info
     bool debug_out_ = false;
+
+    // List of activated motors
     const std::vector<std::string> rarm_motors = {"RSC", "RSP", "RSR", "RSY", "REP",
 						  "RWRY", "RWRR", "RWRP", "RHDY"};
     std::vector<int> rarm_mbc_ids;
+
+    // Counter for forward passes
     int stepCounter_ = 0;
 
+    // Name of end-effector to display distance in GUI
     std::string ee_link_name = "Rindex_Link2";
+
+    // Fixed offsets to be added to NN predictions
     const std::vector<double> motor_offset = {0, 60, -20,  -5, -105,  0, -40, 0, 0,
 					      0, 60,  20,   5, -105,  0,  40, 0, 0};
 
+    // Fixed waypoints
     const std::vector<Eigen::Vector3d> wp = {Eigen::Vector3d(0.5, -0.2, 0.0),
 					     Eigen::Vector3d(0.5, -0.2, 0.4),
 					     Eigen::Vector3d(0.5, -0.4, 0.4),
 					     Eigen::Vector3d(0.5, -0.4, 0.0)};
     std::vector<Eigen::Vector3d>::const_iterator wp_iter = wp.begin();
-    /// @}
 };
