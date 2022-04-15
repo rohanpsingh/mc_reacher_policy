@@ -22,6 +22,7 @@ protected:
     Eigen::VectorXd get_robot_state(mc_control::fsm::Controller & ctl);
     Eigen::VectorXd get_ext_state(mc_control::fsm::Controller & ctl);
     void switch_target(mc_control::fsm::Controller & ctl);
+    void addLogEntries(mc_control::fsm::Controller & ctl);
 
 private:
     // trained policy
@@ -32,7 +33,8 @@ private:
     torch::jit::script::Module module;
 
     // Holder for observations(robot_state + external state) and actions
-    std::vector<float> policy_actions;
+    std::vector<double> policy_inputs;
+    std::vector<double> policy_actions;
     Eigen::VectorXd robot_state;
     Eigen::VectorXd ext_state;
 

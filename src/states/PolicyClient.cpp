@@ -20,6 +20,11 @@ void PolicyClient::start(mc_control::fsm::Controller & ctl)
     rarm_mbc_ids.push_back(idx);
   }
 
+  // zero the inputs and outputs to RL
+  policy_inputs = std::vector<double>(obs_vec_len, 0);
+  policy_actions = std::vector<double>(act_vec_len, 0);
+
+  addLogEntries(ctl);
   createGUI(ctl);
   mc_rtc::log::success("[{}] Trained model loaded from \"{}\"", name(), path_to_trained_policy_);
 }
@@ -48,29 +53,30 @@ bool PolicyClient::run(mc_control::fsm::Controller & ctl)
     // create fake observation
     std::vector<double> fake_obs = obs;
     fake_obs[6] = -0.82;
+    policy_inputs = fake_obs;
 
     // Convert observation vector to torch::Tensor
     // (https://discuss.pytorch.org/t/how-to-convert-vector-int-into-c-torch-tensor/66539)
     auto opts = torch::TensorOptions().dtype(torch::kDouble);
-    torch::Tensor t = torch::from_blob(fake_obs.data(), {(int)fake_obs.size()}, opts).to(torch::kFloat);
+    torch::Tensor t = torch::from_blob(policy_inputs.data(), {(int)policy_inputs.size()}, opts).to(torch::kFloat);
     std::vector<torch::jit::IValue> inputs = {t};
 
     // Execute the model and turn its output into a tensor.
     at::Tensor module_out = module.forward(inputs).toTensor();  // determinstic=true?
     module_out = module_out.contiguous();
-    std::vector<float> preds(module_out.data_ptr<float>(),
-			     module_out.data_ptr<float>() + module_out.numel());
+    std::vector<double> preds(module_out.data_ptr<float>(),
+			      module_out.data_ptr<float>() + module_out.numel());
     policy_actions = preds;
 
     // for debug
     if(debug_out_==true)
     {
       std::stringstream obs_ss;
-      std::copy(fake_obs.begin(), fake_obs.end(),std::ostream_iterator<double>(obs_ss,", "));
+      std::copy(policy_inputs.begin(), policy_inputs.end(),std::ostream_iterator<double>(obs_ss,", "));
       mc_rtc::log::info("[{}] {} Robot state: {}", name(), stepCounter_, obs_ss.str().c_str());
 
       std::stringstream act_ss;
-      std::copy(preds.begin(), preds.end(),std::ostream_iterator<double>(act_ss,", "));
+      std::copy(policy_actions.begin(), policy_actions.end(),std::ostream_iterator<double>(act_ss,", "));
       mc_rtc::log::info("[{}] {} Module predictions: {}", name(), stepCounter_, act_ss.str().c_str());
     }
     stepCounter_++;
@@ -108,10 +114,17 @@ bool PolicyClient::run(mc_control::fsm::Controller & ctl)
   return true;
 }
 
+void PolicyClient::addLogEntries(mc_control::fsm::Controller & ctl)
+{
+  ctl.logger().addLogEntry("Policy_actions", [this]() {return policy_actions;});
+  ctl.logger().addLogEntry("Policy_inputs", [this]() {return policy_inputs;});
+}
+
 void PolicyClient::teardown(mc_control::fsm::Controller & ctl)
 {
   active_ = false;
   ctl.gui()->removeCategory({"RL", name()});
+  ctl.logger().removeLogEntry("Policy");
 }
 
 
