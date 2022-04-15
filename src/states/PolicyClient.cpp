@@ -45,10 +45,14 @@ bool PolicyClient::run(mc_control::fsm::Controller & ctl)
     full_state << robot_state, ext_state;
     std::vector<double> obs(full_state.data(), full_state.data() + full_state.size());
 
+    // create fake observation
+    std::vector<double> fake_obs = obs;
+    fake_obs[6] = -0.82;
+
     // Convert observation vector to torch::Tensor
     // (https://discuss.pytorch.org/t/how-to-convert-vector-int-into-c-torch-tensor/66539)
     auto opts = torch::TensorOptions().dtype(torch::kDouble);
-    torch::Tensor t = torch::from_blob(obs.data(), {(int)obs.size()}, opts).to(torch::kFloat);
+    torch::Tensor t = torch::from_blob(fake_obs.data(), {(int)fake_obs.size()}, opts).to(torch::kFloat);
     std::vector<torch::jit::IValue> inputs = {t};
 
     // Execute the model and turn its output into a tensor.
@@ -62,7 +66,7 @@ bool PolicyClient::run(mc_control::fsm::Controller & ctl)
     if(debug_out_==true)
     {
       std::stringstream obs_ss;
-      std::copy(obs.begin(), obs.end(),std::ostream_iterator<double>(obs_ss,", "));
+      std::copy(fake_obs.begin(), fake_obs.end(),std::ostream_iterator<double>(obs_ss,", "));
       mc_rtc::log::info("[{}] {} Robot state: {}", name(), stepCounter_, obs_ss.str().c_str());
 
       std::stringstream act_ss;
