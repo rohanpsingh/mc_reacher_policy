@@ -1,5 +1,4 @@
-# FetchContent from CMake >= 3.11
-cmake_minimum_required(VERSION 3.11)
+cmake_minimum_required(VERSION 3.1)
 
 set(CXX_DISABLE_WERROR 1)
 set(CMAKE_CXX_STANDARD 14)
@@ -12,12 +11,18 @@ project(${PROJECT_NAME} CXX)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/CMakeModules)
 
 if(NOT EXISTS ${PROJECT_SOURCE_DIR}/ext/libtorch)
-  include(FetchContent)
-  FetchContent_Declare(libtorch
-    URL https://download.pytorch.org/libtorch/nightly/cpu/libtorch-cxx11-abi-shared-with-deps-latest.zip
-    SOURCE_DIR ${PROJECT_SOURCE_DIR}/ext/libtorch
-  )
-  FetchContent_Populate(libtorch)
+  # FetchContent from CMake >= 3.11
+  if(${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.11")
+    message(STATUS "libtorch is missing. Will be automatically downloaded.")
+    include(FetchContent)
+    FetchContent_Declare(libtorch
+      URL https://download.pytorch.org/libtorch/nightly/cpu/libtorch-cxx11-abi-shared-with-deps-latest.zip
+      SOURCE_DIR ${PROJECT_SOURCE_DIR}/ext/libtorch
+      )
+    FetchContent_Populate(libtorch)
+  else()
+    message(FATAL_ERROR "libtorch is missing at ${PROJECT_SOURCE_DIR}/ext/libtorch. Download from https://download.pytorch.org/libtorch/nightly/cpu/libtorch-cxx11-abi-shared-with-deps-latest.zip")
+  endif()
 endif()
 
 set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${PROJECT_SOURCE_DIR}/ext/libtorch)
