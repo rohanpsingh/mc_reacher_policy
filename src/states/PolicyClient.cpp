@@ -21,8 +21,11 @@ void PolicyClient::start(mc_control::fsm::Controller & ctl)
   }
 
   // zero the inputs and outputs to RL
-  policy_inputs = std::vector<double>(obs_vec_len, 0);
-  policy_actions = std::vector<double>(act_vec_len, 0);
+  policy_in_dq = {};
+  policy_inputs = std::vector<double>(obs_vec_len*num_obs_instances, 0);
+  // Very poor way of fixing the initial value of policy_actions
+  // to make it identical to the training environment
+  policy_actions = {0.0, 1.0471975511965976, -0.3490658503988659, -0.08726646259971647, -1.8325957145940461, 0.0, -0.6981317007977318, 0.0, 0.0};
 
   addLogEntries(ctl);
   createGUI(ctl);
@@ -51,12 +54,33 @@ bool PolicyClient::run(mc_control::fsm::Controller & ctl)
     std::vector<double> obs(full_state.data(), full_state.data() + full_state.size());
 
     // create fake observation
-    std::vector<double> fake_obs = obs;
-    fake_obs[6] = -0.82;
-    policy_inputs = fake_obs;
+    //obs[6] = -0.82;
+
+
+    if (policy_in_dq.size()==0)
+    {
+      for(unsigned int i = 0; i < num_obs_instances; i++)
+      {
+	policy_in_dq.push_front(obs);
+      }
+    }
+    else
+    {
+      policy_in_dq.push_front(obs);
+      policy_in_dq.pop_back();
+    }
 
     // Convert observation vector to torch::Tensor
     // (https://discuss.pytorch.org/t/how-to-convert-vector-int-into-c-torch-tensor/66539)
+    for (unsigned int i = 0; i < policy_in_dq.size(); i++)
+    {
+      std::vector<double> v = policy_in_dq.at(i);
+      for (unsigned int j = 0; j < v.size(); j++)
+      {
+	policy_inputs[j+i*v.size()] = v.at(j);
+      }
+    }
+
     auto opts = torch::TensorOptions().dtype(torch::kDouble);
     torch::Tensor t = torch::from_blob(policy_inputs.data(), {(int)policy_inputs.size()}, opts).to(torch::kFloat);
     std::vector<torch::jit::IValue> inputs = {t};
@@ -153,10 +177,13 @@ Eigen::VectorXd PolicyClient::get_robot_state(mc_control::fsm::Controller & ctl)
   }
   Eigen::VectorXd eig_motor_vel = Eigen::Map<Eigen::VectorXd, Eigen::Unaligned>
     (motor_vel.data(), motor_vel.size());
+  // predictions at previous step
+  Eigen::VectorXd prev_command = Eigen::Map<Eigen::VectorXd, Eigen::Unaligned>
+    (policy_actions.data(), policy_actions.size());
 
   // robot state
-  Eigen::VectorXd robot_state(18);
-  robot_state << eig_motor_pos, eig_motor_vel;
+  Eigen::VectorXd robot_state(27);
+  robot_state << eig_motor_pos, eig_motor_vel, prev_command;
   return robot_state;
 }
 

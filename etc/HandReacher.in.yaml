@@ -25,9 +25,6 @@ robots:
 # General constraints, always on
 constraints:
 - type: contact
-- type: kinematics
-  damper: [0.1, 0.01, 0.5]
-  velocityPercent: 0.05
 - type: compoundJoint
 
 # Collision constraint
@@ -81,8 +78,9 @@ contacts: []
 # Some options for a specific robot
 hrp5_p:
   posture:
-    stiffness: 10 # tested in high servo PD gains experiment (2022-04-15)
-    weight: 1
+    #stiffness: 10 # tested in high servo PD gains experiment (2022-04-15)
+    stiffness: 100
+    weight: 1000
 
 # Implement some additional text states
 states:

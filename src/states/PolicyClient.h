@@ -2,6 +2,7 @@
 
 #include <torch/torch.h>
 #include <torch/script.h>
+#include <deque>
 
 #include <mc_control/fsm/Controller.h>
 #include <mc_control/fsm/State.h>
@@ -26,13 +27,15 @@ protected:
 
 private:
     // trained policy
-    const std::string path_to_trained_policy_ = "/tmp/actor.pt";
-    const int obs_vec_len = 21;
+    const std::string path_to_trained_policy_ = "/tmp/actor_obs_6.pt";
+    const int num_obs_instances = 6;
+    const int obs_vec_len = 30;
     const int act_vec_len = 9;
     const float policy_ts = 0.025;
     torch::jit::script::Module module;
 
     // Holder for observations(robot_state + external state) and actions
+    std::deque<std::vector<double>> policy_in_dq;
     std::vector<double> policy_inputs;
     std::vector<double> policy_actions;
     Eigen::VectorXd robot_state;
