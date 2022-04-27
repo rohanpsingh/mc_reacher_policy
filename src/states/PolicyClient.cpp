@@ -118,6 +118,7 @@ void PolicyClient::addLogEntries(mc_control::fsm::Controller & ctl)
 {
   ctl.logger().addLogEntry("Policy_actions", [this]() {return policy_actions;});
   ctl.logger().addLogEntry("Policy_inputs", [this]() {return policy_inputs;});
+  ctl.logger().addLogEntry("Policy_eeError", [this]() {return current_ee_error;});
 }
 
 void PolicyClient::teardown(mc_control::fsm::Controller & ctl)
@@ -222,8 +223,8 @@ void PolicyClient::createGUI(mc_control::fsm::Controller & ctl)
 				    {
 				      auto p1 = ctl.realRobot().posW() * current_waypoint;
 				      auto p2 = ctl.realRobot().bodyPosW(ee_link_name);
-				      float dist = (p1.translation() - p2.translation()).norm();
-				      return dist;
+				      current_ee_error = (p1.translation() - p2.translation()).norm();
+				      return current_ee_error;
 				    })
 		 );
   gui.addElement({"RL", name()},

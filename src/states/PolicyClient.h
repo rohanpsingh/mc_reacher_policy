@@ -55,7 +55,7 @@ private:
     int iterCounter_ = 0;
 
     // Name of end-effector to display distance in GUI
-    std::string ee_link_name = "Rindex_Link2";
+    std::string ee_link_name = "Rhand_Link0_Plan2";
 
     // Fixed offsets to be added to NN predictions (degrees)
     // ideally, we should get this from half-sitting posture
@@ -68,4 +68,5 @@ private:
 					     Eigen::Vector3d(0.5, -0.4, 0.0)};
     std::vector<Eigen::Vector3d>::const_iterator wp_iter = wp.begin();
     Eigen::Vector3d current_waypoint = Eigen::Vector3d(0.4, -0.2, 0.0);
+    float current_ee_error = 0.0;
 };
