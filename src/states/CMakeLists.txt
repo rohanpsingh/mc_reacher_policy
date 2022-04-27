@@ -1,4 +1,3 @@
-#add_fsm_state_simple(ROSClient)
 add_fsm_state_simple(PolicyClient)
 target_link_libraries(PolicyClient PUBLIC
   "${TORCH_LIBRARIES}"
