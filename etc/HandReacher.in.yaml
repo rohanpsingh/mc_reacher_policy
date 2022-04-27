@@ -81,7 +81,8 @@ contacts: []
 # Some options for a specific robot
 hrp5_p:
   posture:
-    stiffness: 10 # tested in high servo PD gains experiment (2022-04-15)
+    #stiffness: 10 # tested in high servo PD gains experiment (2022-04-15)
+    stiffness: 100 # tested in low servo PD gains experiment (2022-04-26)
     weight: 1
 
 # Implement some additional text states
