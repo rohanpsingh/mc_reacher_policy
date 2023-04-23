@@ -62,11 +62,19 @@ bool PolicyClient::run(mc_control::fsm::Controller & ctl)
     torch::Tensor t = torch::from_blob(policy_inputs.data(), {(int)policy_inputs.size()}, opts).to(torch::kFloat);
     std::vector<torch::jit::IValue> inputs = {t};
 
-    // Execute the model and turn its output into a tensor.
-    at::Tensor module_out = module.forward(inputs).toTensor(); // determinstic=true?
-    module_out = module_out.contiguous();
-    std::vector<double> preds(module_out.data_ptr<float>(), module_out.data_ptr<float>() + module_out.numel());
-    policy_actions = preds;
+    // function to do a forward pass through actor network
+    std::function<void()> policy_fwd_ = [&, this]() {
+      auto start_t = std::chrono::steady_clock::now();
+      module_out = module.forward(inputs).toTensor();
+      module_out = module_out.contiguous();
+      policy_actions = std::vector<double>(module_out.data_ptr<float>(),
+                                           module_out.data_ptr<float>() + module_out.numel());
+      auto end_t = std::chrono::steady_clock::now();
+      exec_dt = end_t - start_t;
+    };
+
+    // Call datastore that will execute both the models
+    ctl.datastore().call("ExecuteActorCritic", policy_fwd_);
 
     // for debug
     if(debug_out_ == true)

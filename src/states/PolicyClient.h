@@ -44,6 +44,9 @@ private:
   // Set 'true' to print debug info
   bool debug_out_ = false;
 
+  // Holders for NN raw outputs
+  at::Tensor module_out;
+
   // List of activated motors
   const std::vector<std::string> rarm_motors = {"RSC", "RSP", "RSR", "RSY", "REP", "RWRY", "RWRR", "RWRP", "RHDY"};
   std::vector<int> rarm_mbc_ids;
@@ -66,4 +69,6 @@ private:
   std::vector<Eigen::Vector3d>::const_iterator wp_iter = wp.begin();
   Eigen::Vector3d current_waypoint = Eigen::Vector3d(0.4, -0.2, 0.0);
   float current_ee_error = 0.0;
+
+  std::chrono::duration<double, std::milli> exec_dt{0};
 };
