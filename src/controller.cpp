@@ -31,7 +31,6 @@ HandReacher::HandReacher(mc_rbdyn::RobotModulePtr rm, double dt, const mc_rtc::C
                       return ss.str();
                     }));
 
-
   // Load default configuration from robot module
   mc_rtc::log::info("Loading default stabilizer configuration");
   auto stabiConfig = robot().module().defaultLIPMStabilizerConfiguration();
@@ -44,20 +43,14 @@ HandReacher::HandReacher(mc_rbdyn::RobotModulePtr rm, double dt, const mc_rtc::C
   }
 
   // configure stabilizer task
-  stabilizer_.reset(
-    new mc_tasks::lipm_stabilizer::StabilizerTask(
-      solver().robots(),
-      solver().realRobots(),
-      robot().robotIndex(),
-      stabiConfig.leftFootSurface,
-      stabiConfig.rightFootSurface,
-      stabiConfig.torsoBodyName,
-      solver().dt()));
+  stabilizer_.reset(new mc_tasks::lipm_stabilizer::StabilizerTask(
+      solver().robots(), solver().realRobots(), robot().robotIndex(), stabiConfig.leftFootSurface,
+      stabiConfig.rightFootSurface, stabiConfig.torsoBodyName, solver().dt()));
   stabilizer_->configure(stabiConfig);
 
   // is this needed?
-  stabilizer_->setContacts({mc_tasks::lipm_stabilizer::ContactState::Left,
-	mc_tasks::lipm_stabilizer::ContactState::Right});
+  stabilizer_->setContacts(
+      {mc_tasks::lipm_stabilizer::ContactState::Left, mc_tasks::lipm_stabilizer::ContactState::Right});
 
   // Update observers
   datastore().make_call("KinematicAnchorFrame::" + robot().name(), [this](const mc_rbdyn::Robot & robot) {
