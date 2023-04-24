@@ -117,13 +117,13 @@ states:
     base: ModifyGains
     duration: 5
     activeMotors: ["RSC", "RSP", "RSR", "RSY", "REP", "RWRY", "RWRR", "RWRP", "RHDY"]
-    motorPGains: [100, 100, 100, 100, 100, 100, 100, 100, 100]
-    motorDGains: [10, 10, 10, 10, 10, 10, 10, 10, 10]
+    motorPGains: [64.7, 64.7, 111.72, 28.58, 174.1, 27.72, 27.72, 29.84, 13.86]
+    motorDGains: [6.47, 6.47, 11.172, 2.166, 17.41, 2.774, 2.774, 2.238, 1.386]
 
   PolicyClientState:
     base: PolicyClient
-    motorPGains: [100, 100, 100, 100, 100, 100, 100, 100, 100]
-    motorDGains: [10, 10, 10, 10, 10, 10, 10, 10, 10]
+    motorPGains: [64.7, 64.7, 111.72, 28.58, 174.1, 27.72, 27.72, 29.84, 13.86]
+    motorDGains: [6.47, 6.47, 11.172, 2.166, 17.41, 2.774, 2.774, 2.238, 1.386]
 
   Standing:
     base: Parallel
