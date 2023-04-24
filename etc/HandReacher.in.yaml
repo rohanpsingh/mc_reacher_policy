@@ -95,6 +95,13 @@ states:
         stiffness: 1.0
         weight: 1.0
 
+  ModPDState:
+    base: ModifyGains
+    duration: 5
+    activeMotors: ["RSC", "RSP", "RSR", "RSY", "REP", "RWRY", "RWRR", "RWRP", "RHDY"]
+    motorPGains: [100, 100, 100, 100, 100, 100, 100, 100, 100]
+    motorDGains: [10, 10, 10, 10, 10, 10, 10, 10, 10]
+
   Standing:
     base: Parallel
     states: [Stabilizer::Standing, StabilizerConfiguration]
