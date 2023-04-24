@@ -88,6 +88,14 @@ void PolicyClient::start(mc_control::fsm::Controller & ctl)
   // zero the command torques
   command_torques = std::vector<double>(act_vec_len, 0);
 
+  // Make several forward passes through the model because
+  // it seems TorchScript runtime does some optimizations on the first pass
+  std::vector<torch::jit::IValue> inputs = {torch::zeros(obs_vec_len)};
+  for(unsigned int i = 0; i < 4; i++)
+  {
+    module.forward(inputs);
+  }
+
   addLogEntries(ctl);
   createGUI(ctl);
   mc_rtc::log::success("[{}] Trained model loaded from \"{}\"", name(), path_to_trained_policy_);
