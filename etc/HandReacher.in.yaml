@@ -17,25 +17,7 @@ StatesFiles:
 # If true, state factory will be more verbose
 VerboseStateFactory: false
 
-# Additional robots to load
-robots:
-  ground:
-    module: env/ground
-
-# General constraints, always on
-constraints:
-- type: contact
-- type: kinematics
-  damper: [0.1, 0.01, 0.5]
-  velocityPercent: 0.05
-- type: compoundJoint
-
-# Collision constraint
-collisions:
-- type: collision
-  useMinimal: true
-
-# Initial set of contacts
+contacts: []
 robots:
   ground:
     module: env/ground
@@ -67,16 +49,6 @@ robot_models:
       friction: 0.7
     torso:
       pitch: 0.0
-
-contacts: []
-#- r1: hrp5_p
-#  r2: ground
-#  r1Surface: LeftFoot
-#  r2Surface: AllGround
-#- r1: hrp5_p
-#  r2: ground
-#  r1Surface: RightFoot
-#  r2Surface: AllGround
 
 # Some options for a specific robot
 hrp5_p:
