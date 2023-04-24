@@ -102,6 +102,11 @@ states:
     motorPGains: [100, 100, 100, 100, 100, 100, 100, 100, 100]
     motorDGains: [10, 10, 10, 10, 10, 10, 10, 10, 10]
 
+  PolicyClientState:
+    base: PolicyClient
+    motorPGains: [100, 100, 100, 100, 100, 100, 100, 100, 100]
+    motorDGains: [10, 10, 10, 10, 10, 10, 10, 10, 10]
+
   Standing:
     base: Parallel
     states: [Stabilizer::Standing, StabilizerConfiguration]

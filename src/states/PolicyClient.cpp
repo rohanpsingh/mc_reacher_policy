@@ -1,6 +1,46 @@
 #include "PolicyClient.h"
 
-void PolicyClient::configure(const mc_rtc::Configuration & config) {}
+void PolicyClient::configure(const mc_rtc::Configuration & config)
+{
+  config("motorPGains", motor_kps_);
+  config("motorDGains", motor_kds_);
+}
+
+void PolicyClient::verifyServoGains(mc_control::fsm::Controller & ctl)
+{
+  const auto & rjo = ctl.robot().module().ref_joint_order();
+  for(unsigned int i = 0; i < rarm_motors.size(); i++)
+  {
+    auto rjo_it = std::find(rjo.begin(), rjo.end(), rarm_motors[i]);
+    if(rjo_it == rjo.end())
+    {
+      mc_rtc::log::error_and_throw<std::runtime_error>("[{}] Motor name \"{}\" not found in ref_joint_order: {}.",
+                                                       name(), rarm_motors[i], rjo);
+    }
+
+    bool get_servo_success = false;
+    double kp, kd;
+    if(ctl.datastore().has(ctl.robot().name() + "::GetPDGainsByName"))
+    {
+      get_servo_success = ctl.datastore().call<bool, const std::string &, double &, double &>(
+          ctl.robot().name() + "::GetPDGainsByName", rarm_motors[i], kp, kd);
+    }
+    if(!get_servo_success)
+    {
+      mc_rtc::log::error_and_throw<std::runtime_error>("[{}] Could not get PD gains through datastore call!!!", name());
+    }
+
+    auto check_and_throw = [&](const std::string & s, double exp, double act) {
+      if(std::abs(exp - act) > 0.1)
+      {
+        mc_rtc::log::error_and_throw<std::runtime_error>(
+            "[{}] Unexpected servo {} gain for joint {}!!! Expected={}. Is={}", name(), s, rarm_motors[i], exp, act);
+      }
+    };
+    check_and_throw("kp", motor_kps_[i], kp);
+    check_and_throw("kd", motor_kds_[i], kd);
+  }
+}
 
 void PolicyClient::start(mc_control::fsm::Controller & ctl)
 {
@@ -20,6 +60,9 @@ void PolicyClient::start(mc_control::fsm::Controller & ctl)
     int idx = ctl.robot().jointIndexByName(rarm_motors[i]);
     rarm_mbc_ids.push_back(idx);
   }
+
+  // verify if expected PD gains are loaded
+  verifyServoGains(ctl);
 
   // zero the inputs and outputs to RL
   policy_inputs = std::vector<double>(obs_vec_len, 0);
