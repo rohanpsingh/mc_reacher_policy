@@ -110,8 +110,8 @@ bool PolicyClient::run(mc_control::fsm::Controller & ctl)
       auto start_t = std::chrono::steady_clock::now();
       module_out = module.forward(inputs).toTensor();
       module_out = module_out.contiguous();
-      policy_actions = std::vector<double>(module_out.data_ptr<float>(),
-                                           module_out.data_ptr<float>() + module_out.numel());
+      policy_actions =
+          std::vector<double>(module_out.data_ptr<float>(), module_out.data_ptr<float>() + module_out.numel());
       auto end_t = std::chrono::steady_clock::now();
       exec_dt = end_t - start_t;
     };
@@ -138,8 +138,8 @@ bool PolicyClient::run(mc_control::fsm::Controller & ctl)
     std::vector<double> target;
     if(policy_actions.size() != act_vec_len)
     {
-      mc_rtc::log::error("[{}] Action vector is unexpected size (size={} expected={})!", name(),
-                         policy_actions.size(), act_vec_len);
+      mc_rtc::log::error("[{}] Action vector is unexpected size (size={} expected={})!", name(), policy_actions.size(),
+                         act_vec_len);
       active_ = false;
       output("OK");
       return true;
