@@ -136,22 +136,19 @@ bool PolicyClient::run(mc_control::fsm::Controller & ctl)
   if(active_)
   {
     std::vector<double> target;
-    if(policy_actions.size() == 0)
+    if(policy_actions.size() != act_vec_len)
     {
-      mc_rtc::log::warning("[{}] Action vector is empty!", name());
-      for(unsigned int i = 0; i < rarm_motors.size(); i++)
-      {
-        double t = motor_offset.at(i) * PI / 180;
-        target.push_back(t);
-      }
+      mc_rtc::log::error("[{}] Action vector is unexpected size (size={} expected={})!", name(),
+                         policy_actions.size(), act_vec_len);
+      active_ = false;
+      output("OK");
+      return true;
     }
-    else
+
+    for(unsigned int i = 0; i < rarm_motors.size(); i++)
     {
-      for(unsigned int i = 0; i < rarm_motors.size(); i++)
-      {
-        double t = policy_actions.at(i) + motor_offset.at(i) * PI / 180;
-        target.push_back(t);
-      }
+      double t = policy_actions.at(i) + motor_offset.at(i) * PI / 180;
+      target.push_back(t);
     }
 
     // set the control msg
