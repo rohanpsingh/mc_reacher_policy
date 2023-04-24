@@ -4,6 +4,10 @@ void PolicyClient::configure(const mc_rtc::Configuration & config)
 {
   config("motorPGains", motor_kps_);
   config("motorDGains", motor_kds_);
+  config("qdotLimits", qdot_limits_);
+  config("tauLimits", tau_limits_);
+  config("qLimitLower", qlim_lower_);
+  config("qLimitUpper", qlim_upper_);
 }
 
 void PolicyClient::verifyServoGains(mc_control::fsm::Controller & ctl)
@@ -42,6 +46,19 @@ void PolicyClient::verifyServoGains(mc_control::fsm::Controller & ctl)
   }
 }
 
+void PolicyClient::triggerSoftEmergency(mc_control::fsm::Controller & ctl)
+{
+  active_ = false;
+  std::map<std::string, double> safe_msg;
+  for(auto i : rarm_motors)
+  {
+    int idx = ctl.robot().jointIndexByName(i);
+    double q = ctl.realRobot().mbc().q[idx][0];
+    safe_msg[i] = q;
+  }
+  ctl.datastore().assign(datastoreName_, safe_msg);
+}
+
 void PolicyClient::start(mc_control::fsm::Controller & ctl)
 {
   // load policy here
@@ -68,6 +85,9 @@ void PolicyClient::start(mc_control::fsm::Controller & ctl)
   policy_inputs = std::vector<double>(obs_vec_len, 0);
   policy_actions = std::vector<double>(act_vec_len, 0);
 
+  // zero the command torques
+  command_torques = std::vector<double>(act_vec_len, 0);
+
   addLogEntries(ctl);
   createGUI(ctl);
   mc_rtc::log::success("[{}] Trained model loaded from \"{}\"", name(), path_to_trained_policy_);
@@ -75,6 +95,15 @@ void PolicyClient::start(mc_control::fsm::Controller & ctl)
 
 bool PolicyClient::run(mc_control::fsm::Controller & ctl)
 {
+  // Fall slowly if emergency flag is raised
+  if(eme_raised)
+  {
+    triggerSoftEmergency(ctl);
+    mc_rtc::log::error("[{}] Emergency trigerred!", name());
+    output("OK");
+    return true;
+  }
+
   int skipFrames = policy_ts / ctl.timeStep;
   if(iterCounter_ % skipFrames == 0)
   {
@@ -133,6 +162,21 @@ bool PolicyClient::run(mc_control::fsm::Controller & ctl)
     stepCounter_++;
   }
 
+  size_t motor_idx = 0;
+  for(auto i : rarm_motors)
+  {
+    int idx = ctl.robot().jointIndexByName(i);
+    double qdot = ctl.realRobot().mbc().alpha[idx][0];
+    if(std::abs(qdot) > std::abs(qdot_limits_[motor_idx]))
+    {
+      active_ = false;
+      eme_raised = true;
+      mc_rtc::log::warning("[{}] Velocity limit-over triggered at joint: ({}) ({} > {})!", name(), i, std::abs(qdot),
+                           std::abs(qdot_limits_[motor_idx]));
+    }
+    motor_idx++;
+  }
+
   if(active_)
   {
     std::vector<double> target;
@@ -155,6 +199,40 @@ bool PolicyClient::run(mc_control::fsm::Controller & ctl)
     unsigned int target_idx_ = 0;
     for(auto i : rarm_motors)
     {
+      // log the computed torques
+      int idx = ctl.robot().jointIndexByName(i);
+      double q = ctl.realRobot().mbc().q[idx][0];
+      double qd = ctl.realRobot().mbc().alpha[idx][0];
+      double qerr = (target[target_idx_] - q);
+      double qderr = (0 - qd);
+      double tau_out = motor_kps_[target_idx_] * (qerr) + motor_kds_[target_idx_] * (qderr);
+      command_torques[target_idx_] = tau_out;
+
+      // check for torque safety
+      double tau_lim = tau_limits_[target_idx_];
+      if(std::fabs(tau_out) > tau_lim)
+      {
+        active_ = false;
+        eme_raised = true;
+        mc_rtc::log::warning("[{}] Target ({}) was too far from current position ({}) for {}! "
+                             "Computed torque ({}) exceeds the limit ({})!",
+                             name(), target[target_idx_], q, i, tau_out, tau_lim);
+        break;
+      }
+
+      // check for joint position limit safety
+      double llimit = qlim_lower_[target_idx_] * PI / 180;
+      double ulimit = qlim_upper_[target_idx_] * PI / 180;
+      if((q < llimit) || (q > ulimit))
+      {
+        active_ = false;
+        eme_raised = true;
+        mc_rtc::log::warning("[{}] Joint {} position exceeds the defined limits!! "
+                             "(q={} deg, llimit={} deg, ulimit={} deg)",
+                             name(), i, q * 180 / PI, llimit * 180 / PI, ulimit * 180 / PI);
+        break;
+      }
+
       control_msg[i] = target[target_idx_];
       target_idx_++;
     }

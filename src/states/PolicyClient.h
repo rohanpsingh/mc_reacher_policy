@@ -19,6 +19,7 @@ struct PolicyClient : mc_control::fsm::State
 
 protected:
   void verifyServoGains(mc_control::fsm::Controller & ctl);
+  void triggerSoftEmergency(mc_control::fsm::Controller & ctl);
   void createGUI(mc_control::fsm::Controller & ctl);
   Eigen::VectorXd get_robot_state(mc_control::fsm::Controller & ctl);
   Eigen::VectorXd get_ext_state(mc_control::fsm::Controller & ctl);
@@ -35,6 +36,22 @@ private:
    * Servo kD gains should be provided in the same order as active_motors_.
    */
   std::vector<double> motor_kds_;
+  /**
+   * Speed limits for joints. Should be in same order as active_motors_.
+   */
+  std::vector<double> qdot_limits_;
+  /**
+   * Control torque limits for joints. Should be in same order as active_motors_.
+   */
+  std::vector<double> tau_limits_;
+  /**
+   * Lower limit (in degrees) for joint position limits.
+   */
+  std::vector<double> qlim_lower_;
+  /**
+   * Upper limit (in degrees) for joint position limits.
+   */
+  std::vector<double> qlim_upper_;
   ///@}
 
   // control msg to send to actuators
@@ -55,11 +72,17 @@ private:
   Eigen::VectorXd robot_state;
   Eigen::VectorXd ext_state;
 
+  // Torque commanded by policy
+  std::vector<double> command_torques;
+
   // Set 'true' to enable PostureTask targets update
   bool active_ = false;
 
   // Set 'true' to print debug info
   bool debug_out_ = false;
+
+  // Set 'true' to trigger emergency
+  bool eme_raised = false;
 
   // Holders for NN raw outputs
   at::Tensor module_out;
@@ -84,7 +107,7 @@ private:
   const std::vector<Eigen::Vector3d> wp = {Eigen::Vector3d(0.5, -0.2, 0.0), Eigen::Vector3d(0.5, -0.2, 0.4),
                                            Eigen::Vector3d(0.5, -0.4, 0.4), Eigen::Vector3d(0.5, -0.4, 0.0)};
   std::vector<Eigen::Vector3d>::const_iterator wp_iter = wp.begin();
-  Eigen::Vector3d current_waypoint = Eigen::Vector3d(0.4, -0.2, 0.0);
+  Eigen::Vector3d current_waypoint = Eigen::Vector3d(0.3, -0.3, 0.1);
   float current_ee_error = 0.0;
 
   std::chrono::duration<double, std::milli> exec_dt{0};

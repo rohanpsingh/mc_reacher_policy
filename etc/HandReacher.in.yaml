@@ -83,7 +83,7 @@ states:
           RSP: [0.75]
           REP: [-2.0]
         completion:
-          timeout: 0.2
+          timeout: 3
 
   ModPDState:
     base: ModifyGains
@@ -96,6 +96,10 @@ states:
     base: PolicyClient
     motorPGains: [64.7, 64.7, 111.72, 28.58, 174.1, 27.72, 27.72, 29.84, 13.86]
     motorDGains: [6.47, 6.47, 11.172, 2.166, 17.41, 2.774, 2.774, 2.238, 1.386]
+    qdotLimits: [3, 3, 3, 3, 3, 3, 3, 3, 3]
+    tauLimits: [90, 80, 60, 40, 160, 10, 50, 15, 10]
+    qLimitLower: [-5, 20, -50, -30, -140, -15, -50,  0, -5,]
+    qLimitUpper: [60, 60, -15,  20,  -30,   0, -35, 15, 10,]
 
   Standing:
     base: Parallel
