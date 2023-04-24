@@ -107,7 +107,7 @@ private:
   const std::vector<Eigen::Vector3d> wp = {Eigen::Vector3d(0.5, -0.2, 0.0), Eigen::Vector3d(0.5, -0.2, 0.4),
                                            Eigen::Vector3d(0.5, -0.4, 0.4), Eigen::Vector3d(0.5, -0.4, 0.0)};
   std::vector<Eigen::Vector3d>::const_iterator wp_iter = wp.begin();
-  Eigen::Vector3d current_waypoint = Eigen::Vector3d(0.3, -0.3, 0.1);
+  Eigen::Vector3d current_waypoint = Eigen::Vector3d(0.4, -0.3, 0.1);
   float current_ee_error = 0.0;
 
   std::chrono::duration<double, std::milli> exec_dt{0};
