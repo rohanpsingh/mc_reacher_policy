@@ -18,6 +18,7 @@ struct PolicyClient : mc_control::fsm::State
   void teardown(mc_control::fsm::Controller & ctl) override;
 
 protected:
+  void verifyServoGains(mc_control::fsm::Controller & ctl);
   void createGUI(mc_control::fsm::Controller & ctl);
   Eigen::VectorXd get_robot_state(mc_control::fsm::Controller & ctl);
   Eigen::VectorXd get_ext_state(mc_control::fsm::Controller & ctl);
@@ -25,6 +26,17 @@ protected:
   void addLogEntries(mc_control::fsm::Controller & ctl);
 
 private:
+  /// @{ CONFIG
+  /**
+   * Servo kP gains should be provided in the same order as active_motors_.
+   */
+  std::vector<double> motor_kps_;
+  /**
+   * Servo kD gains should be provided in the same order as active_motors_.
+   */
+  std::vector<double> motor_kds_;
+  ///@}
+
   // trained policy
   const std::string path_to_trained_policy_ = "/tmp/actor.pt";
   const int obs_vec_len = 21;
@@ -48,7 +60,7 @@ private:
   at::Tensor module_out;
 
   // List of activated motors
-  const std::vector<std::string> rarm_motors = {"RSC", "RSP", "RSR", "RSY", "REP", "RWRY", "RWRR", "RWRP", "RHDY"};
+  std::vector<std::string> rarm_motors = {"RSC", "RSP", "RSR", "RSY", "REP", "RWRY", "RWRR", "RWRP", "RHDY"};
   std::vector<int> rarm_mbc_ids;
 
   // Counter for forward passes

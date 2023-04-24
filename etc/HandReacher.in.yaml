@@ -95,6 +95,36 @@ states:
         stiffness: 1.0
         weight: 1.0
 
+  MoveHand:
+    base: MetaTasks
+    constraints:
+      KinConstraint:
+        type: kinematics
+        damper: [0.1, 0.01, 0.5]
+        velocityPercent: 0.1
+    tasks:
+      posture:
+        type: posture
+        stiffness: 1000.
+        weight: 100.
+        target:
+          RSP: [0.75]
+          REP: [-2.0]
+        completion:
+          timeout: 0.2
+
+  ModPDState:
+    base: ModifyGains
+    duration: 5
+    activeMotors: ["RSC", "RSP", "RSR", "RSY", "REP", "RWRY", "RWRR", "RWRP", "RHDY"]
+    motorPGains: [100, 100, 100, 100, 100, 100, 100, 100, 100]
+    motorDGains: [10, 10, 10, 10, 10, 10, 10, 10, 10]
+
+  PolicyClientState:
+    base: PolicyClient
+    motorPGains: [100, 100, 100, 100, 100, 100, 100, 100, 100]
+    motorDGains: [10, 10, 10, 10, 10, 10, 10, 10, 10]
+
   Standing:
     base: Parallel
     states: [Stabilizer::Standing, StabilizerConfiguration]
@@ -105,12 +135,14 @@ states:
 
   Demo:
     base: Parallel
-    states: [PolicyClient, Standing]
+    states: [PolicyClientState, Standing]
 
 # Transitions map
 transitions:
 #- [Demo, OK, Demo, Strict]
-- [Initialize, OK, Demo, Strict]
+- [Initialize, OK, MoveHand, Strict]
+- [MoveHand, OK, ModPDState, Strict]
+- [ModPDState, OK, Demo, Strict]
 
 # Initial state
 init: Initialize
