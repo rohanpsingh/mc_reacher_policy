@@ -241,7 +241,9 @@ bool PolicyClient::run(mc_control::fsm::Controller & ctl)
         break;
       }
 
+      // dont control RWRR joint for now
       control_msg[i] = target[target_idx_];
+      control_msg["RWRR"] = -0.8;
       target_idx_++;
     }
     ctl.datastore().assign(datastoreName_, control_msg);
