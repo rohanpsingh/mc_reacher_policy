@@ -10,4 +10,6 @@ set_target_properties(PolicyClient
 
 add_fsm_state_simple(StabilizerConfiguration)
 
+add_fsm_state_simple(ModifyGains)
+
 add_fsm_data_directory(data)
