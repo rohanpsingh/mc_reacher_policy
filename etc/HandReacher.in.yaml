@@ -104,6 +104,43 @@ states:
       StabilizerConfiguration:
         key: [robot_models, hrp5_p, stabilizer]
         verbose: false
+    constraints:
+      ContactConstraint:
+        type: contact
+      CompoundConstraint:
+        type: compoundJoint
+      KinConstraint:
+        type: kinematics
+        damper: [0.1, 0.01, 0.5]
+        velocityPercent: 0.05
+      CollisionConstraint:
+        type: collision
+        collisions:
+          - body1: Rleg_Link2
+            body2: Lleg_Link2
+            iDist: 0.02
+            sDist: 0.01
+            damping: 0
+          - body1: Rleg_Link2
+            body2: Lleg_Link3
+            iDist: 0.02
+            sDist: 0.01
+            damping: 0
+          - body1: Rleg_Link3
+            body2: Lleg_Link2
+            iDist: 0.02
+            sDist: 0.01
+            damping: 0
+          - body1: Rleg_Link3
+            body2: Lleg_Link3
+            iDist: 0.02
+            sDist: 0.01
+            damping: 0
+          - body1: Rleg_Link5
+            body2: Lleg_Link5
+            iDist: 0.02
+            sDist: 0.01
+            damping: 0
 
   Demo:
     base: Parallel
