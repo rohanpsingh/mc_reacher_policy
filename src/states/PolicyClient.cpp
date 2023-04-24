@@ -254,16 +254,18 @@ bool PolicyClient::run(mc_control::fsm::Controller & ctl)
 
 void PolicyClient::addLogEntries(mc_control::fsm::Controller & ctl)
 {
-  ctl.logger().addLogEntry("Policy_actions", [this]() { return policy_actions; });
-  ctl.logger().addLogEntry("Policy_inputs", [this]() { return policy_inputs; });
-  ctl.logger().addLogEntry("Policy_eeError", [this]() { return current_ee_error; });
+  ctl.logger().addLogEntry(name() + "Policy_actions", [this]() { return policy_actions; });
+  ctl.logger().addLogEntry(name() + "Policy_inputs", [this]() { return policy_inputs; });
+  ctl.logger().addLogEntry(name() + "Policy_eeError", [this]() { return current_ee_error; });
+  ctl.logger().addLogEntry(name() + "Policy_tauRef", [this]() { return command_torques; });
+  ctl.logger().addLogEntry("perf_" + name() + "_PolicyExec", [this]() { return exec_dt.count(); });
 }
 
 void PolicyClient::teardown(mc_control::fsm::Controller & ctl)
 {
   active_ = false;
   ctl.gui()->removeCategory({"RL", name()});
-  ctl.logger().removeLogEntry("Policy");
+  ctl.logger().removeLogEntry(name() + "Policy");
 }
 
 void PolicyClient::switch_target(mc_control::fsm::Controller & ctl)
