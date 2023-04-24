@@ -25,6 +25,8 @@ HandReacher::HandReacher(mc_rbdyn::RobotModulePtr rm, double dt, const mc_rtc::C
   });
 
   // create gui
+  gui()->addElement({"RL"}, mc_rtc::gui::Checkbox(
+                                "bypassQP?", [this]() { return bypassQP_; }, [this]() { bypassQP_ = !bypassQP_; }));
   gui()->addElement({"RL"}, mc_rtc::gui::Label("Policy thread id:", [this]() {
                       std::stringstream ss;
                       ss << policy_th_.get_id();
@@ -82,11 +84,21 @@ bool HandReacher::run()
       return true;
     }
     msg = datastore().get<std::map<std::string, double>>(datastoreName_);
-    for(auto i : msg)
+    if(bypassQP_)
     {
-      auto jIndex = robot().jointIndexByName(i.first);
-      robot().mbc().q[jIndex] = std::vector<double>{i.second};
-      robot().mbc().alpha[jIndex] = std::vector<double>{0};
+      for(auto i : msg)
+      {
+        auto jIndex = robot().jointIndexByName(i.first);
+        robot().mbc().q[jIndex] = std::vector<double>{i.second};
+        robot().mbc().alpha[jIndex] = std::vector<double>{0};
+      }
+    }
+    else
+    {
+      for(auto i : msg)
+      {
+        getPostureTask(robot().name())->target({{i.first, std::vector<double>{i.second}}});
+      }
     }
     return true;
   }

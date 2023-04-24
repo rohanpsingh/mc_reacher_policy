@@ -37,6 +37,11 @@ private:
   std::vector<double> motor_kds_;
   ///@}
 
+  // control msg to send to actuators
+  std::map<std::string, double> control_msg;
+  // name of datastore that carries control msg to controller
+  std::string datastoreName_ = "PolicyPredictions";
+
   // trained policy
   const std::string path_to_trained_policy_ = "/tmp/actor.pt";
   const int obs_vec_len = 21;

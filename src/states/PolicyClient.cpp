@@ -154,12 +154,14 @@ bool PolicyClient::run(mc_control::fsm::Controller & ctl)
       }
     }
 
-    // set posture task targets
-    for(unsigned int i = 0; i < rarm_motors.size(); i++)
+    // set the control msg
+    unsigned int target_idx_ = 0;
+    for(auto i : rarm_motors)
     {
-      std::string jn = rarm_motors[i];
-      ctl.getPostureTask(ctl.robot().name())->target({{jn, std::vector<double>{target[i]}}});
+      control_msg[i] = target[target_idx_];
+      target_idx_++;
     }
+    ctl.datastore().assign(datastoreName_, control_msg);
   }
 
   iterCounter_++;

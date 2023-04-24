@@ -27,6 +27,7 @@ private:
 
   std::map<std::string, double> msg;
   std::string datastoreName_ = "PolicyPredictions";
+  bool bypassQP_ = false;
 
   // thread NN model execution
   std::thread policy_th_;
