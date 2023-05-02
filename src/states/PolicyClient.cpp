@@ -77,6 +77,7 @@ void PolicyClient::start(mc_control::fsm::Controller & ctl)
     int idx = ctl.robot().jointIndexByName(rarm_motors[i]);
     rarm_mbc_ids.push_back(idx);
   }
+  module.eval();
 
   // verify if expected PD gains are loaded
   verifyServoGains(ctl);
@@ -91,6 +92,7 @@ void PolicyClient::start(mc_control::fsm::Controller & ctl)
   // Make several forward passes through the model because
   // it seems TorchScript runtime does some optimizations on the first pass
   std::vector<torch::jit::IValue> inputs = {torch::zeros(obs_vec_len)};
+  torch::NoGradGuard no_grad;
   for(unsigned int i = 0; i < 4; i++)
   {
     module.forward(inputs);
@@ -144,6 +146,7 @@ bool PolicyClient::run(mc_control::fsm::Controller & ctl)
 
     // function to do a forward pass through actor network
     std::function<void()> policy_fwd_ = [&, this]() {
+      torch::NoGradGuard no_grad;
       auto start_t = std::chrono::steady_clock::now();
       module_out = module.forward(inputs).toTensor();
       module_out = module_out.contiguous();
